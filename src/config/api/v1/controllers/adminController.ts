@@ -12,14 +12,22 @@ export const setCustomClaims = async (
     next: NextFunction
 ): Promise<void> => {
     const { uid, claims } = req.body;
+    if (!uid || !claims) {
+        res.status(HTTP_STATUS.BAD_REQUEST).json({
+            error: "Missing uid or claims in request body"
+        });
+        return;
+    }
 
     try {
         await auth.setCustomUserClaims(uid, claims);
         res.status(HTTP_STATUS.OK).json({
             message: `Custom claims set for user: ${uid}`,
             success: true,
+            uid,
+            claims
         });
-    } catch (error: unknown) {
+    } catch (error) {
         next(error);
     }
 };
@@ -32,15 +40,21 @@ export const getUserDetails = async (
     res: Response,
     next: NextFunction
 ): Promise<void> => {
-    const { uid } = req.params;
+    const { id } = req.params; // Matches route param below!
+    if (!id) {
+        res.status(HTTP_STATUS.BAD_REQUEST).json({
+            error: "Missing id in request params"
+        });
+        return;
+    }
 
     try {
-        const user: UserRecord = await auth.getUser(uid);
+        const user: UserRecord = await auth.getUser(id);
         res.status(HTTP_STATUS.OK).json({
             success: true,
-            data: user,
+            data: user
         });
-    } catch (error: unknown) {
+    } catch (error) {
         next(error);
     }
 };
